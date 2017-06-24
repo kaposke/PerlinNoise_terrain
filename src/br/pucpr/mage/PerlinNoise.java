@@ -3,7 +3,7 @@ package br.pucpr.mage;
 import java.util.Random;
 
 /**
- * Created by LaraPorts on 23/06/2017.
+ * Created by Laroske on 23/06/2017.
  */
 public class PerlinNoise {
 

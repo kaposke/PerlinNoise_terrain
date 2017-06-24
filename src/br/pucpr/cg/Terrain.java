@@ -17,9 +17,13 @@ import br.pucpr.mage.Window;
 import br.pucpr.mage.phong.DirectionalLight;
 import br.pucpr.mage.phong.Material;
 
+/**
+ * Created by Laroske on 23/06/2017.
+ */
+
 public class Terrain implements Scene {
     private Keyboard keys = Keyboard.getInstance();
-    
+
     //Dados da cena
     private Camera camera = new Camera();
     private DirectionalLight light = new DirectionalLight(
@@ -34,10 +38,10 @@ public class Terrain implements Scene {
             new Vector3f(1.0f, 1.0f, 1.0f), //ambient
             new Vector3f(0.7f, 0.7f, 0.7f), //diffuse
             new Vector3f(1.0f, 1.0f, 1.0f), //specular
-            512.0f);                         //specular power    
+            512.0f);                         //specular power
     private float angleX = 0.0f;
     private float angleY = 0.5f;
-    
+
     @Override
     public void init() {
         glEnable(GL_DEPTH_TEST);
@@ -58,69 +62,70 @@ public class Terrain implements Scene {
 
     @Override
     public void update(float secs) {
+        float speed = 120.0f;
+        float speedRotation = 30.0f;
+
         if (keys.isPressed(GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(glfwGetCurrentContext(), GLFW_TRUE);
             return;
         }
 
         if (keys.isDown(GLFW_KEY_A)) {
-            camera.getPosition().x -= 100 * secs;
-            camera.getTarget().x -= 100 * secs;
+            camera.strafeLeft(-speed * secs);
         }
 
         if (keys.isDown(GLFW_KEY_D)) {
-            camera.getPosition().x += 100 * secs;
-            camera.getTarget().x += 100 * secs;
-        }
-        
-        if (keys.isDown(GLFW_KEY_W)) {
-            camera.getPosition().z -= 100 * secs;
-            camera.getTarget().z -= 100 * secs;
+            camera.strafeLeft(speed * secs);
         }
 
+        //pra frente
+        if (keys.isDown(GLFW_KEY_W)) {
+            camera.moveFront(speed * secs);
+        }
+
+        //pra tras
         if (keys.isDown(GLFW_KEY_S)) {
-            camera.getPosition().z += 100 * secs;
-            camera.getTarget().z += 100 * secs;
+            camera.moveFront(-speed * secs);
         }
 
         if (keys.isDown(GLFW_KEY_LEFT)) {
-            camera.getTarget().x -= 100 * secs;
+            camera.rotate((float) Math.toRadians(speedRotation) * secs);
         }
 
         if (keys.isDown(GLFW_KEY_RIGHT)) {
-            camera.getTarget().x += 100 * secs;
+            camera.rotate(-(float) Math.toRadians(speedRotation) * secs);
         }
 
         if (keys.isDown(GLFW_KEY_UP)) {
-            camera.getTarget().y += 100 * secs;
+            camera.rotateX((float) Math.toRadians(speedRotation) * secs, 1);
         }
 
         if (keys.isDown(GLFW_KEY_DOWN)) {
-            camera.getTarget().y -= 100 * secs;
+            camera.rotateX(-(float) Math.toRadians(speedRotation) * secs, 2);
         }
-        
+
         if (keys.isDown(GLFW_KEY_SPACE)) {
             angleX = 0;
             angleY = 0;
         }
     }
 
-@Override
-public void draw() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    Shader shader = mesh.getShader();
-    shader.bind()
-        .setUniform("uProjection", camera.getProjectionMatrix())
-        .setUniform("uView", camera.getViewMatrix())
-        .setUniform("uCameraPosition", camera.getPosition());        
-    light.apply(shader);
-    material.apply(shader);
-    shader.unbind();
+    @Override
+    public void draw() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    mesh.setUniform("uWorld", new Matrix4f().rotateY(angleY).rotateX(angleX));
-    mesh.draw();
-}
+        Shader shader = mesh.getShader();
+        shader.bind()
+                .setUniform("uProjection", camera.getProjectionMatrix())
+                .setUniform("uView", camera.getViewMatrix())
+                .setUniform("uCameraPosition", camera.getPosition());
+        light.apply(shader);
+        material.apply(shader);
+        shader.unbind();
+
+        mesh.setUniform("uWorld", new Matrix4f().rotateY(angleY).rotateX(angleX));
+        mesh.draw();
+    }
 
     @Override
     public void deinit() {
